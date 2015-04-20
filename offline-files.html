@@ -1,0 +1,41 @@
+<head>
+  <title>offline-files</title>
+</head>
+
+<body>
+  <h1>Offline Files</h1>
+
+  {{> files}}
+  <hr>
+  {{> player}}
+</body>
+
+<template name="files">
+  <h4>{{#unless connected}}Not {{/unless}}Connected</h4>
+  {{#each files}}
+  	{{name}} - {{type}} {{#if canLoad}}<button class="load">Load</button>{{/if}}  {{#unless downloaded}}{{#if canLoad}}<button class="download">Download</button>{{/if}}{{else}}<button class="delete">Delete</button>{{/unless}}<br>
+  {{/each}}
+</template>
+<template name="player">
+	{{#if file}}
+		<h4>{{file.name}}</h4>
+		<small><a href="{{fileUrl}}">{{fileUrl}}</a></small>
+		{{#if $eq file.type "video"}}
+			<video id="video" width="320" height="240" controls webkit-playsinline>
+			  <source id="video-source" src="{{fileUrl}}" type="video/mp4">
+				Your browser does not support the video tag.
+			</video>
+		{{else}}
+			{{#if $eq file.type "audio"}}
+				<audio id="audio" controls="controls">
+				  Your browser does not support the <code>audio</code> element.
+				  <source id="audio-source" src="{{fileUrl}}">
+				</audio>
+			{{else}}
+				<img src="{{fileUrl}}"/>
+			{{/if}}
+		{{/if}}
+	{{else}}
+		Select a file to load
+	{{/if}}
+</template>

@@ -1,1 +1,3 @@
-# meteor-offline-mobile-files
+##  Offline Files Demo for Cordova
+
+
