@@ -2,68 +2,6 @@ Files = new Ground.Collection('files');
 OfflineFiles = new Ground.Collection('offlineFiles', { connection: null });
 
 if (Meteor.isClient) {
-  if (Meteor.isCordova) {
-    var httpd = null;
-    var httpUrl = null;
-
-    function startServer(wwwroot) {
-      console.log('starting server at ' + wwwroot);
-      if (httpd) {
-        // before start, check whether its up or not
-        httpd.getURL(function(url) {
-          if (url.length > 0) {
-            httpUrl = url;
-            console.log("server is up: <a href='" + url + "' target='_blank'>" + url + "</a>");
-            // httpd.getLocalPath(function(path) {
-            //   console.log("localPath: " + path);
-            // });
-          } else {
-            /* wwwroot is the root dir of web server, it can be absolute or relative path
-             * if a relative path is given, it will be relative to cordova assets/www/ in APK.
-             * "", by default, it will point to cordova assets/www/, it's good to use 'htdocs' for 'www/htdocs'
-             * if a absolute path is given, it will access file system.
-             * "/", set the root dir as the www root, it maybe a security issue, but very powerful to browse all dir
-             */
-            httpd.startServer({
-              'www_root': wwwroot,
-              'port': 8080,
-              'localhost_only': true
-            }, function(url) {
-              httpUrl = url;
-              // if server is up, it will return the url of http://<server ip>:port/
-              // the ip is the active network connection
-              // if no wifi or no cell, "127.0.0.1" will be returned.
-              console.log("server is started: <a href='" + url + "' target='_blank'>" + url + "</a>");
-              // httpd.getLocalPath(function(path) {
-              //   console.log("localPath: " + path);
-              // });
-
-            }, function(error) {
-              console.log('failed to start server: ' + error);
-            });
-          }
-
-        });
-      } else {
-        alert('CorHttpd plugin not available/ready.');
-      }
-    }
-
-    Meteor.startup(function() {
-      httpd = (cordova && cordova.plugins && cordova.plugins.CorHttpd) ? cordova.plugins.CorHttpd : null;
-      if (httpd) {
-        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
-          // console.log('fileSystem');
-          // console.log(fileSystem);
-          var path = fileSystem.root.nativeURL.replace("file://", "");
-          // console.log(path);
-          startServer(path);
-        });
-      }
-    });
-  }
-
-
 
   Session.setDefault('fileId', null);
 
@@ -98,7 +36,7 @@ if (Meteor.isClient) {
         fileId: this._id
       });
       if (offlineFile)
-        sourceUrl = httpUrl + offlineFile._id + "-" + offlineFile.fileName;
+        sourceUrl = offlineFile.internalUrl;
 
       if(this.type === "video"){
         $("#video-source").attr("src", sourceUrl);
@@ -119,19 +57,24 @@ if (Meteor.isClient) {
           var offlineId = Random.id();
           //console.log(fileSystem.root);
           var path = fileSystem.root.toURL() + offlineId + "-" + file.fileName;
+          var rootToURL = fileSystem.root.toURL();
+          var rootToInternalURL = fileSystem.root.toInternalURL();
+            
+
           fileTransfer.download(
             file.url,
             path,
             function(entry) {
               // console.log("Success " + path);
-              // console.log(entry);
+              //console.log(entry);
               OfflineFiles.insert({
                 _id: offlineId,
                 fileId: file._id,
                 name: file.name,
                 fileName: file.fileName,
                 type: file.type,
-                fsPath: path
+                fsPath: path,
+                internalUrl: path.replace(rootToURL,rootToInternalURL)
               });
               //console.log(OfflineFiles.findOne(offlineId));
             },
@@ -171,15 +114,14 @@ if (Meteor.isClient) {
       var file = Files.findOne({
         _id: Session.get('fileId')
       });
-      var sourceUrl = file.url;
       var offlineFile = OfflineFiles.findOne({
         fileId: file._id
       });
+      
       if (offlineFile)
-        sourceUrl = httpUrl + offlineFile._id + "-" + offlineFile.fileName;
-
-      //console.log('source url is ' + sourceUrl);
-      return sourceUrl;
+        return offlineFile.internalUrl;
+      else
+        return file.url;
     }
   });
 }
