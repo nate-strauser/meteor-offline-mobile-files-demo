@@ -27,7 +27,7 @@ if (Meteor.isClient) {
             httpd.startServer({
               'www_root': wwwroot,
               'port': 8080,
-              'localhost_only': true
+              'localhost_only': false
             }, function(url) {
               httpUrl = url;
               // if server is up, it will return the url of http://<server ip>:port/
