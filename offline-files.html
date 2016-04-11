@@ -21,15 +21,11 @@
 		<h4>{{file.name}}</h4>
 		<small><a href="{{fileUrl}}">{{fileUrl}}</a></small>
 		{{#if $eq file.type "video"}}
-			<video id="video" width="320" height="240" controls webkit-playsinline>
-			  <source id="video-source" src="{{fileUrl}}" type="video/mp4">
-				Your browser does not support the video tag.
+			<video id="video" width="320" height="240" controls webkit-playsinline src="{{fileUrl}}">
 			</video>
 		{{else}}
 			{{#if $eq file.type "audio"}}
-				<audio id="audio" controls="controls">
-				  Your browser does not support the <code>audio</code> element.
-				  <source id="audio-source" src="{{fileUrl}}">
+				<audio id="audio" controls="controls" src="{{fileUrl}}">
 				</audio>
 			{{else}}
 				<img src="{{fileUrl}}"/>
